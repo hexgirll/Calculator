@@ -1,44 +1,139 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="uk">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculator</title>
-    <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculator</title>
+  <link rel="stylesheet" href="css/style.css" />
 </head>
+<body class="dark">
+
+  <div class="theme-toggle-wrap">
+    <span class="theme-label">☀️</span>
+    <label class="switch">
+      <input type="checkbox" id="themeToggle" checked />
+      <span class="slider"></span>
+    </label>
+    <span class="theme-label">🌙</span>
+  </div>
 
 <body>
-    <div class="calculator">
-        <div class="display">
-            <input type="text" id="display" readonly>
-        </div>
-        <div class="buttons">
-            <button class="btn clear">C</button>
-            <button class="btn operator">/</button>
-            <button class="btn operator">*</button>
-            <button class="btn backspace">⌫</button>
-            
-            <button class="btn number">1</button>
-            <button class="btn number">2</button>
-            <button class="btn number">3</button>
-            <button class="btn operator">-</button>
-            
-            <button class="btn number">4</button>
-            <button class="btn number">5</button>
-            <button class="btn number">6</button>
-            <button class="btn operator">+</button>
-            
-            <button class="btn number">7</button>
-            <button class="btn number">8</button>
-            <button class="btn number">9</button>
-            <button class="btn decimal">.</button>
-            <button class="btn equals">=</button>
-            
-            <button class="btn number zero">0</button>
-        </div>
-    </div>
-    <script src="js/script.js"></script>
-</body>
+   <div class="calculator" id="calculator">
 
+    <!-- MODE TABS -->
+    <div class="mode-tabs">
+      <button class="tab active" data-mode="standard">Звичайний</button>
+      <button class="tab" data-mode="scientific">Науковий</button>
+      <button class="tab" data-mode="converter">Конвертер</button>
+    </div>
+
+    <!-- DISPLAY -->
+    <div class="display">
+      <div class="history" id="history"></div>
+      <div class="output" id="output">0</div>
+    </div>
+
+    <!-- STANDARD MODE -->
+    <div class="keypad" id="mode-standard">
+      <button class="btn fn" data-action="clear">C</button>
+      <button class="btn fn" data-action="sign">+/−</button>
+      <button class="btn fn" data-action="percent">%</button>
+      <button class="btn op" data-action="operator" data-value="÷">÷</button>
+
+      <button class="btn num" data-action="digit" data-value="7">7</button>
+      <button class="btn num" data-action="digit" data-value="8">8</button>
+      <button class="btn num" data-action="digit" data-value="9">9</button>
+      <button class="btn op" data-action="operator" data-value="×">×</button>
+
+      <button class="btn num" data-action="digit" data-value="4">4</button>
+      <button class="btn num" data-action="digit" data-value="5">5</button>
+      <button class="btn num" data-action="digit" data-value="6">6</button>
+      <button class="btn op" data-action="operator" data-value="−">−</button>
+
+      <button class="btn num" data-action="digit" data-value="1">1</button>
+      <button class="btn num" data-action="digit" data-value="2">2</button>
+      <button class="btn num" data-action="digit" data-value="3">3</button>
+      <button class="btn op" data-action="operator" data-value="+">+</button>
+
+      <button class="btn num wide" data-action="digit" data-value="0">0</button>
+      <button class="btn num" data-action="decimal">.</button>
+      <button class="btn eq" data-action="equals">=</button>
+    </div>
+
+    <!-- SCIENTIFIC MODE -->
+    <div class="keypad hidden" id="mode-scientific">
+      <button class="btn fn" data-action="clear">C</button>
+      <button class="btn fn" data-action="sign">+/−</button>
+      <button class="btn fn" data-action="percent">%</button>
+      <button class="btn op" data-action="operator" data-value="÷">÷</button>
+
+      <button class="btn sci" data-action="factorial">x!</button>
+      <button class="btn sci" data-action="sqrt">√x</button>
+      <button class="btn sci" data-action="square">x²</button>
+      <button class="btn op" data-action="operator" data-value="×">×</button>
+
+      <button class="btn sci" data-action="memory-store">MS</button>
+      <button class="btn sci" data-action="memory-recall">MR</button>
+      <button class="btn sci" data-action="memory-clear">MC</button>
+      <button class="btn op" data-action="operator" data-value="−">−</button>
+
+      <button class="btn sci" data-action="memory-add">M+</button>
+      <button class="btn sci" data-action="memory-sub">M−</button>
+      <button class="btn num" data-action="digit" data-value="0">0</button>
+      <button class="btn op" data-action="operator" data-value="+">+</button>
+
+      <button class="btn num" data-action="digit" data-value="7">7</button>
+      <button class="btn num" data-action="digit" data-value="8">8</button>
+      <button class="btn num" data-action="digit" data-value="9">9</button>
+      <button class="btn sci" data-action="power">xⁿ</button>
+
+      <button class="btn num" data-action="digit" data-value="4">4</button>
+      <button class="btn num" data-action="digit" data-value="5">5</button>
+      <button class="btn num" data-action="digit" data-value="6">6</button>
+      <button class="btn sci" data-action="log">log</button>
+
+      <button class="btn num" data-action="digit" data-value="1">1</button>
+      <button class="btn num" data-action="digit" data-value="2">2</button>
+      <button class="btn num" data-action="digit" data-value="3">3</button>
+      <button class="btn sci" data-action="ln">ln</button>
+
+      <button class="btn num wide" data-action="digit" data-value="0">0</button>
+      <button class="btn num" data-action="decimal">.</button>
+      <button class="btn eq" data-action="equals">=</button>
+    </div>
+
+    <!-- CONVERTER MODE -->
+    <div class="keypad converter-panel hidden" id="mode-converter">
+      <div class="conv-tabs">
+        <button class="conv-tab active" data-conv="length">📏 Довж.</button>
+        <button class="conv-tab" data-conv="mass">⚖️ Маса</button>
+        <button class="conv-tab" data-conv="area">🟦 Площа</button>
+        <button class="conv-tab" data-conv="currency">💵 Валюта</button> </div>
+
+      <div class="conv-body">
+        <input type="number" id="convInput" placeholder="Введіть значення" />
+        <div class="conv-selects">
+          <select id="convFrom"></select>
+          <span class="conv-arrow">→</span>
+          <select id="convTo"></select>
+        </div>
+        <button class="btn eq full" id="convBtn">Конвертувати</button>
+        <div class="conv-result" id="convResult">—</div>
+      </div>
+        </div>
+
+    <!-- HISTORY PANEL -->
+    <div class="history-panel">
+      <div class="history-header">
+        <span>📋 Історія</span>
+        <button class="copy-btn" id="copyHistoryBtn">Копіювати</button>
+        <button class="copy-btn" id="clearHistoryBtn">Очистити</button>
+      </div>
+      <div class="history-list" id="historyList"></div>
+    </div>
+
+  </div>
+
+  <script src="js/script.js"></script>
+</body>
 </html>
