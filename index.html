@@ -10,35 +10,87 @@
 
 <body>
     <div class="calculator">
-        <div class="display">
+        <div class="display-container">
+            <div class="display-label">Result</div>
             <input type="text" id="display" readonly>
+            <div class="display-label">Memory: <span id="memoryDisplay">0</span></div>
         </div>
         <div class="buttons">
-            <button class="btn clear">C</button>
-            <button class="btn operator">/</button>
-            <button class="btn operator">*</button>
-            <button class="btn backspace">⌫</button>
+            <!-- First row: Memory and Numeral System operations -->
+            <button class="btn memory">MC</button>
+            <button class="btn memory">MR</button>
+            <button class="btn memory">M+</button>
+            <button class="btn memory">M-</button>
             
-            <button class="btn number">1</button>
-            <button class="btn number">2</button>
-            <button class="btn number">3</button>
-            <button class="btn operator">-</button>
-            
-            <button class="btn number">4</button>
-            <button class="btn number">5</button>
-            <button class="btn number">6</button>
-            <button class="btn operator">+</button>
-            
-            <button class="btn number">7</button>
-            <button class="btn number">8</button>
-            <button class="btn number">9</button>
-            <button class="btn decimal">.</button>
-            <button class="btn equals">=</button>
-            
-            <button class="btn number zero">0</button>
+            <!-- Numeral System Dropdown -->
+            <div class="numeral-dropdown">
+                <button class="btn numeral-toggle">DEC ▼</button>
+                <div class="numeral-menu">
+                    <button class="numeral-option" data-system="DEC">DEC</button>
+                    <button class="numeral-option" data-system="HEX">HEX</button>
+                    <button class="numeral-option" data-system="BIN">BIN</button>
+                    <button class="numeral-option" data-system="OCT">OCT</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Two-column layout: Scientific (left) + Main Calculator (right) -->
+        <div class="calculator-wrapper">
+            <!-- Left column: Scientific buttons -->
+            <div class="scientific-column">
+                <button class="btn scientific">x!</button>
+                <button class="btn scientific">x^n</button>
+                <button class="btn scientific">x²</button>
+                <button class="btn scientific">√x</button>
+                
+                <!-- More Scientific Functions Dropdown -->
+                <div class="scientific-more">
+                    <button class="btn more-toggle">MORE ▼</button>
+                    <div class="more-menu">
+                        <button class="more-option" data-func="()">( )</button>
+                        <button class="more-option" data-func="|x|">| |</button>
+                        <button class="more-option" data-func="%">%</button>
+                        <button class="more-option" data-func="x³">x³</button>
+                        <button class="more-option" data-func="1/x">1/x</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right column: Main calculator buttons -->
+            <div class="main-column">
+                <!-- Second row: Basic operations -->
+                <button class="btn clear">C</button>
+                <button class="btn operator">/</button>
+                <button class="btn operator">*</button>
+                <button class="btn backspace">⌫</button>
+                
+                <!-- Third row: Numbers -->
+                <button class="btn number">1</button>
+                <button class="btn number">2</button>
+                <button class="btn number">3</button>
+                <button class="btn operator">-</button>
+                
+                <!-- Fourth row: Numbers -->
+                <button class="btn number">4</button>
+                <button class="btn number">5</button>
+                <button class="btn number">6</button>
+                <button class="btn operator">+</button>
+                
+                <!-- Fifth row: Numbers -->
+                <button class="btn number">7</button>
+                <button class="btn number">8</button>
+                <button class="btn number">9</button>
+                <button class="btn sign">+/-</button>
+                
+                <!-- Sixth row: Zero and sign -->
+                <button class="btn number zero">0</button>
+                <button class="btn decimal">.</button>
+                <button class="btn equals">=</button>
+            </div>
         </div>
     </div>
-    <script src="js/script.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/advanced.js"></script>
 </body>
 
 </html>
