@@ -354,15 +354,15 @@ input:checked + .slider::before { transform: translateX(22px); }
   outline: none;
   transition: background var(--transition), color var(--transition);
 }
-
 .conv-selects {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column; 
+  align-items: center; 
+  gap: 6px;
 }
 
 .conv-selects select {
-  flex: 1;
+  width: 100%;
   padding: 10px 12px;
   background: var(--select-bg);
   color: var(--select-text);
@@ -373,9 +373,21 @@ input:checked + .slider::before { transform: translateX(22px); }
   outline: none;
   cursor: pointer;
   transition: background var(--transition), color var(--transition);
+
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
-.conv-arrow { color: var(--history-text); font-size: 18px; }
+.conv-arrow { 
+  color: var(--display-text); 
+  font-size: 20px; 
+  font-weight: bold;
+  transform: rotate(90deg); 
+  display: block; 
+  flex-shrink: 0; 
+  margin: -2px 0;
+}
 
 #convBtn {
   padding: 14px;

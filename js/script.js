@@ -26,9 +26,13 @@ const converterConfig = {
     toBase: { 'мм²': 0.000001, 'см²': 0.0001, 'м²': 1, 'км²': 1000000, 'га': 10000, 'акр': 4046.86 },
   },
 };
+
+let liveCurrencyRates = {};
+let isCurrencyLoaded = false;
+
 let currentConvType = 'length';
 
-// ========== DOM ЕЛЕМЕНТИ ==========
+// ========== DOM ==========
 const outputEl = document.getElementById('output');
 const historyEl = document.getElementById('history');
 const historyList = document.getElementById('historyList');
@@ -64,7 +68,7 @@ function formatNumber(val) {
 function setDisplay(val) {
   state.current = String(val);
   updateDisplay();
-} 
+}
 
 // ========== HISTORY ==========
 function addHistory(expr, result) {
@@ -181,7 +185,7 @@ document.getElementById('calculator').addEventListener('click', (e) => {
   setTimeout(() => { btn.style.transform = ''; }, 100);
 });
 
-// ========== ПЕРЕМИКАННЯ РЕЖИМІВ (ТВОЯ ЧАСТИНА) ==========
+// ========== tabs logic
 document.querySelectorAll('.tab').forEach((tab) => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
@@ -193,7 +197,7 @@ document.querySelectorAll('.tab').forEach((tab) => {
   });
 });
 
-// ========== converter logic (ТВОЯ ЧАСТИНА) ==========
+// ========== converter logic 
 function populateConvSelects(type) {
   const { units } = converterConfig[type];
   [convFrom, convTo].forEach((sel, i) => {
@@ -201,7 +205,7 @@ function populateConvSelects(type) {
     units.forEach((u, idx) => {
       const opt = document.createElement('option');
       opt.value = u; opt.textContent = u;
-      if (i === 1 && idx === 1) opt.selected = true; // За замовчуванням друге поле - інша одиниця
+      if (i === 1 && idx === 1) opt.selected = true;
       sel.appendChild(opt);
     });
   });
@@ -212,8 +216,16 @@ document.querySelectorAll('.conv-tab').forEach((tab) => {
     document.querySelectorAll('.conv-tab').forEach((t) => t.classList.remove('active'));
     tab.classList.add('active');
     currentConvType = tab.dataset.conv;
-    populateConvSelects(currentConvType);
     convResult.textContent = '—';
+    if (currentConvType === 'currency') {
+      if (!isCurrencyLoaded) {
+        fetchCurrencies();
+      } else {
+        populateCurrencySelects();
+      }
+    } else {
+      populateConvSelects(currentConvType);
+    }
   });
 });
 
@@ -222,15 +234,77 @@ convBtn.addEventListener('click', () => {
   if (isNaN(val)) { convResult.textContent = 'Введіть число'; return; }
   const from = convFrom.value;
   const to = convTo.value;
-  
-  // Логіка конвертації через базову одиницю
-  const { toBase } = converterConfig[currentConvType];
-  const baseVal = val * toBase[from]; // Переводимо в базу (напр. в UAH)
-  const result = baseVal / toBase[to]; // З бази в цільову
 
-  const formatted = parseFloat(result.toPrecision(8));
-  convResult.textContent = `${val} ${from} = ${formatted} ${to}`;
+  if (currentConvType === 'currency') {
+  
+    if (!isCurrencyLoaded) return;
+    const rateFrom = liveCurrencyRates[from];
+    const rateTo = liveCurrencyRates[to];
+
+    const result = (val / rateFrom) * rateTo;
+    convResult.textContent = `${val} ${from} = ${result.toFixed(2)} ${to}`;
+
+  } else {
+  
+    const { toBase } = converterConfig[currentConvType];
+    const baseVal = val * toBase[from];
+    const result = baseVal / toBase[to];
+    const formatted = parseFloat(result.toPrecision(8));
+    convResult.textContent = `${val} ${from} = ${formatted} ${to}`;
+  }
 });
+
+async function fetchCurrencies() {
+  try {
+    convResult.textContent = 'Завантаження валют...';
+    const response = await fetch('https://open.er-api.com/v6/latest/USD');
+    const data = await response.json();
+
+    if (data.result === "success") {
+      liveCurrencyRates = data.rates;
+      isCurrencyLoaded = true;
+      populateCurrencySelects();
+      convResult.textContent = '—';
+    } else {
+      throw new Error('Помилка API');
+    }
+  } catch (error) {
+    convResult.textContent = 'Помилка мережі!';
+    console.error(error);
+  }
+}
+
+function populateCurrencySelects() {
+  const currencies = Object.keys(liveCurrencyRates); 
+  
+  // API for translating
+  const currencyTranslator = new Intl.DisplayNames(['uk-UA'], { type: 'currency' });
+
+  [convFrom, convTo].forEach((sel, i) => {
+    sel.innerHTML = '';
+    
+    currencies.forEach((currency) => {
+      const opt = document.createElement('option');
+      
+      opt.value = currency; 
+      
+      try {
+        const fullName = currencyTranslator.of(currency);
+    
+        const capitalizedName = fullName.charAt(0).toUpperCase() + fullName.slice(1);
+        
+        opt.textContent = `${currency} - ${capitalizedName}`;
+      } catch (error) {
+        opt.textContent = currency;
+      }
+      
+      if (i === 0 && currency === 'USD') opt.selected = true;
+      if (i === 1 && currency === 'UAH') opt.selected = true;
+      
+      sel.appendChild(opt);
+    });
+  });
+}
 
 // ========== history buttons
 copyHistoryBtn.addEventListener('click', () => {
