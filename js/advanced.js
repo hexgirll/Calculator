@@ -1,10 +1,9 @@
-// Advanced Calculator Features (Scientific, Memory, Numeral Systems)
+// Advanced Calculator Features 
 const memoryDisplay = document.getElementById('memoryDisplay');
 let memory = 0;
 let currentBase = 'DEC';
 let openParenthesesCount = 0; 
 
-// Button event listeners for advanced features
 const memoryButtons = document.querySelectorAll('.btn.memory');
 const scientificButtons = document.querySelectorAll('.btn.scientific');
 const numeralToggle = document.querySelector('.numeral-toggle');
@@ -14,21 +13,18 @@ const moreToggle = document.querySelector('.more-toggle');
 const moreOptions = document.querySelectorAll('.more-option');
 const moreMenu = document.querySelector('.more-menu');
 
-// Memory buttons
 memoryButtons.forEach(button => {
     button.addEventListener('click', () => {
         handleMemory(button.textContent.trim());
     });
 });
 
-// Scientific buttons
 scientificButtons.forEach(button => {
     button.addEventListener('click', () => {
         handleScientific(button.textContent.trim());
     });
 });
 
-// More scientific functions dropdown toggle
 if (moreToggle) {
     moreToggle.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -36,7 +32,6 @@ if (moreToggle) {
     });
 }
 
-// More options
 moreOptions.forEach(option => {
     option.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -46,7 +41,6 @@ moreOptions.forEach(option => {
     });
 });
 
-// Numeral system dropdown toggle
 if (numeralToggle) {
     numeralToggle.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -61,19 +55,20 @@ numeralOptions.forEach(option => {
         const system = option.getAttribute('data-system');
         handleNumeralSystem(system);
         
-        // Update button text
         numeralToggle.textContent = system + ' ▼';
         numeralMenu.classList.remove('active');
     });
 });
 
-// Close dropdowns when clicking outside
 document.addEventListener('click', () => {
     if (numeralMenu) numeralMenu.classList.remove('active');
     if (moreMenu) moreMenu.classList.remove('active');
 });
 
 function hasOperandForPostfix() {
+    if (isNewExpression && currentExpression === '0') {
+        return false;
+    }
     return (!isNewExpression && currentInput !== '') || /[0-9)]$/.test(currentExpression);
 }
 
@@ -106,7 +101,7 @@ function handleMemory(op) {
             memory -= current;
             break;
     }
-    display.value = currentExpression;
+    display.value = currentExpression || '0';
     memoryDisplay.textContent = memory;
 }
 
@@ -130,21 +125,27 @@ function handleScientific(op) {
             return;
         
         case '√x':
-            // Append square root operator to expression
+            if (currentInput !== '' && currentInput !== '0' && currentExpression.endsWith(currentInput) && !(isNewExpression && currentExpression === '0')) {
+                const before = currentExpression.slice(0, -currentInput.length);
+                currentExpression = `${before}√(${currentInput})`;
+                currentInput = '';
+                display.value = currentExpression;
+                return;
+            }
+
             if (currentExpression === '0' || currentExpression === '') {
-                currentExpression = '√';
-            } else if (currentInput === '') {
-                currentExpression += '√';
+                currentExpression = '√(';
+                openParenthesesCount++;
             } else {
-                currentExpression += '√';
+                currentExpression += '√(';
+                openParenthesesCount++;
             }
             currentInput = '';
-            isNewExpression = false; // Prevent number from overwriting prefix operator
+            isNewExpression = false; 
             display.value = currentExpression;
             return;
         
         case 'x²':
-            // Append square operator to expression
             if (!hasOperandForPostfix()) {
                 return;
             }
@@ -158,7 +159,6 @@ function handleScientific(op) {
             return;
         
         case 'x³':
-            // Append cube operator to expression
             if (!hasOperandForPostfix()) {
                 return;
             }
@@ -172,30 +172,49 @@ function handleScientific(op) {
             return;
         
         case '%':
-            // Append percentage operator to expression
-            // Only allow if there's a number to apply percentage to
+            if (!hasOperandForPostfix()) {
+                return;
+            }
             if (currentInput !== '') {
                 currentExpression += '%';
                 currentInput = '';
             } else if (currentExpression !== '' && !['+', '-', '*', '/', '^', '('].includes(currentExpression.slice(-1))) {
                 currentExpression += '%';
             } else {
-                // No number to apply percentage to, don't add it
                 return;
             }
             display.value = currentExpression;
             return;
         
         case '1/x':
-            // Append reciprocal operator to expression
-            if (currentInput !== '') {
-                currentExpression += '/';
-                currentInput = '';
-            } else if (currentExpression !== '' && !['+', '-', '*', '/', '^', '('].includes(currentExpression.slice(-1))) {
-                currentExpression += '/';
+            // Wrap the current number in reciprocal form, or insert 1/( if empty/after operator
+            
+            if (/^1\/\(.+\)$/.test(currentInput)) {
+                return; 
             }
-            display.value = currentExpression;
-            return;
+            
+            if (currentInput !== '' && currentInput !== '0' && currentExpression.endsWith(currentInput) && !(isNewExpression && currentExpression === '0')) {
+                const before = currentExpression.slice(0, -currentInput.length);
+                currentExpression = `${before}1/(${currentInput})`;
+                currentInput = `1/(${currentInput})`; // Update currentInput to reflect wrapping
+                display.value = currentExpression;
+                return;
+            }
+            
+            if (currentExpression === '0' || currentExpression === '' || ['+', '-', '*', '/', '^', '('].includes(currentExpression.slice(-1))) {
+                if (currentExpression === '0') {
+                    currentExpression = '1/(';
+                } else {
+                    currentExpression += '1/(';
+                }
+                currentInput = '';
+                isNewExpression = false;
+                openParenthesesCount++;
+                display.value = currentExpression;
+                return;
+            }
+            
+            return; 
         
         case '|x|':
             // Append absolute value operator to expression
@@ -207,7 +226,7 @@ function handleScientific(op) {
                 currentExpression += '|';
             }
             currentInput = '';
-            isNewExpression = false; // Prevent number from overwriting prefix operator
+            isNewExpression = false; 
             display.value = currentExpression;
             return;
         
@@ -239,7 +258,7 @@ function handleScientific(op) {
                     currentExpression += '(';
                 }
                 currentInput = ''; // Reset current input for new number inside parentheses
-                isNewExpression = false; // We're now building an expression
+                isNewExpression = false; 
                 openParenthesesCount++;
             } else {
                 // Have open parentheses, add closing parenthesis
@@ -257,7 +276,6 @@ function handleScientific(op) {
 
 /**
  * Handle Numeral System Conversions (Binary, Decimal, Hexadecimal, Octal)
- * Properly converts between different bases using decimal as intermediate
  */
 function handleNumeralSystem(targetSystem) {
     let currentValue = currentInput;
@@ -317,8 +335,6 @@ function handleNumeralSystem(targetSystem) {
         return;
     }
 }
-
-// Helper Functions
 
 /**
  * Calculate factorial of a number

@@ -1,13 +1,11 @@
-// Main Calculator Features (Basic Operations)
+// Main Calculator Features
 const display = document.getElementById('display');
 let currentInput = '0';
-let currentExpression = ''; // Track full expression
-let isNewExpression = true; // Track if we're starting a new expression
+let currentExpression = ''; 
+let isNewExpression = true; 
 
-// Initialize display
 display.value = '0';
 
-// Button event listeners for main features
 const numberButtons = document.querySelectorAll('.btn.number');
 const decimalBtn = document.querySelector('.btn.decimal');
 const operatorButtons = document.querySelectorAll('.btn.operator');
@@ -16,46 +14,38 @@ const clearBtn = document.querySelector('.btn.clear');
 const backspaceBtn = document.querySelector('.btn.backspace');
 const signBtn = document.querySelector('.btn.sign');
 
-// Number buttons
 numberButtons.forEach(button => {
     button.addEventListener('click', () => {
         handleNumber(button.textContent.trim());
     });
 });
 
-// Decimal button
 if (decimalBtn) {
     decimalBtn.addEventListener('click', handleDecimal);
 }
 
-// Operator buttons
 operatorButtons.forEach(button => {
     button.addEventListener('click', () => {
         handleOperator(button.textContent.trim());
     });
 });
 
-// Equals button
 if (equalsBtn) {
     equalsBtn.addEventListener('click', handleEquals);
 }
 
-// Clear button
 if (clearBtn) {
     clearBtn.addEventListener('click', handleClear);
 }
 
-// Backspace button
 if (backspaceBtn) {
     backspaceBtn.addEventListener('click', handleBackspace);
 }
 
-// Sign button
 if (signBtn) {
     signBtn.addEventListener('click', handleSign);
 }
 
-// Main Feature Functions
 function handleNumber(value) {
     if (isNewExpression) {
         currentInput = value;
@@ -82,17 +72,27 @@ function handleDecimal() {
     updateDisplay();
 }
 
+function isEmptyPlaceholder() {
+    return isNewExpression && (currentExpression === '' || currentExpression === '0') && currentInput === '0';
+}
+
 function handleOperator(op) {
+    if (isEmptyPlaceholder()) {
+        return;
+    }
     // If we have a number, append the operator
     if (currentInput !== '') {
         currentExpression += op;
         currentInput = '';
+        isNewExpression = false;
     } else if (currentExpression !== '' && isOperator(currentExpression.slice(-1))) {
         // Replace the last operator if no number was entered
         currentExpression = currentExpression.slice(0, -1) + op;
+        isNewExpression = false;
     } else if (currentExpression !== '') {
         // Append operator after parentheses or other non-operator characters
         currentExpression += op;
+        isNewExpression = false;
     }
     updateDisplay();
 }
@@ -105,7 +105,7 @@ function handleEquals() {
             currentExpression = result.toString();
             currentInput = result.toString();
             isNewExpression = true;
-            openParenthesesCount = 0; // Reset parentheses count after evaluation
+            openParenthesesCount = 0; 
         }
     }
 }
@@ -115,7 +115,7 @@ function handleClear() {
     currentExpression = '';
     display.value = '0';
     isNewExpression = true;
-    openParenthesesCount = 0; // Reset parentheses count
+    openParenthesesCount = 0; 
 }
 
 function handleBackspace() {
@@ -145,17 +145,35 @@ function handleBackspace() {
 }
 
 function handleSign() {
-    if (currentInput !== '') {
-        let num = parseFloat(currentInput);
-        num = -num;
-        currentInput = num.toString();
-        
-        // Update the last number in expression
-        let parts = currentExpression.split(/([+\-*/])/);
-        parts[parts.length - 1] = currentInput;
-        currentExpression = parts.join('');
-        updateDisplay();
+    if (currentInput === '' || currentInput === '0') {
+        return;
     }
+
+    let exprBefore = currentExpression.slice(0, -currentInput.length);
+    let needsParens = exprBefore.length > 0 && isOperator(exprBefore.slice(-1));
+    let isWrapped = /^\(-?\d+(\.\d+)?\)$/.test(currentInput);
+
+    if (isWrapped) {
+        // Extract the number inside parentheses
+        let inner = currentInput.slice(1, -1); 
+        let num = parseFloat(inner);
+        let newNum = -num;
+        let newInput = newNum.toString();
+        // Since it was wrapped, and we're negating, if newNum is positive, no parens
+        currentInput = newInput;
+        currentExpression = exprBefore + newInput;
+    } else {
+        // Not wrapped, negate and add parens if needed
+        let num = parseFloat(currentInput);
+        let newNum = -num;
+        let newInput = newNum.toString();
+        if (needsParens) {
+            newInput = `(${newInput})`;
+        }
+        currentInput = newInput;
+        currentExpression = exprBefore + newInput;
+    }
+    updateDisplay();
 }
 
 function updateDisplay() {
@@ -184,8 +202,13 @@ function evaluateExpression(expr) {
             const innerResult = evaluateSimpleExpression(innerExpr);
             if (innerResult === null) return null;
             
-            // Replace the parentheses with the result
-            expr = expr.replace(match[0], innerResult);
+            // Replace the parentheses with the result, handling negative results after +
+            if (innerResult.startsWith('-') && match.index > 0 && expr[match.index - 1] === '+') {
+                // Replace '+(-number)' with '-number'
+                expr = expr.slice(0, match.index - 1) + innerResult + expr.slice(match.index + match[0].length);
+            } else {
+                expr = expr.replace(match[0], innerResult);
+            }
         }
         
         // Evaluate the final expression without parentheses
@@ -201,6 +224,43 @@ function evaluateSimpleExpression(expr) {
         let tokens = tokenizeExpression(expr);
         
         // First pass: handle postfix operators (!, ², ³, %, √ prefix)
+        function getOperandValue(tokens, index) {
+            if (index >= tokens.length) {
+                return null;
+            }
+            if (tokens[index] === '√') {
+                const nested = getOperandValue(tokens, index + 1);
+                if (!nested) return null;
+                return {
+                    value: Math.sqrt(nested.value),
+                    endIndex: nested.endIndex,
+                };
+            }
+            if (tokens[index] === '(') {
+                let depth = 1;
+                let endIndex = index + 1;
+                while (endIndex < tokens.length && depth > 0) {
+                    if (tokens[endIndex] === '(') depth++;
+                    else if (tokens[endIndex] === ')') depth--;
+                    endIndex++;
+                }
+                if (depth !== 0) return null;
+                const innerTokens = tokens.slice(index + 1, endIndex - 1);
+                const innerValue = parseFloat(evaluateSimpleExpression(innerTokens.join('')));
+                if (isNaN(innerValue)) return null;
+                return {
+                    value: innerValue,
+                    endIndex: endIndex - 1,
+                };
+            }
+            const value = parseFloat(tokens[index]);
+            if (isNaN(value)) return null;
+            return {
+                value,
+                endIndex: index,
+            };
+        }
+
         for (let i = 0; i < tokens.length; i++) {
             if (tokens[i] === '!') {
                 let value = parseFloat(tokens[i-1]);
@@ -218,9 +278,10 @@ function evaluateSimpleExpression(expr) {
                 tokens.splice(i, 1);
                 i--;
             } else if (tokens[i] === '√') {
-                let value = parseFloat(tokens[i+1]);
-                tokens[i] = Math.sqrt(value).toString();
-                tokens.splice(i+1, 1);
+                const operand = getOperandValue(tokens, i + 1);
+                if (!operand) return null;
+                tokens.splice(i, operand.endIndex - i + 1, Math.sqrt(operand.value).toString());
+                i--;
             } else if (tokens[i] === '|') {
                 // Find matching closing |
                 let closeIdx = tokens.indexOf('|', i+1);
@@ -265,7 +326,7 @@ function evaluateSimpleExpression(expr) {
                 
                 tokens.splice(i-1, 3, result.toString());
                 i -= 2;
-            } else if (tokens[i] === '%') {
+            } else if (tokens[i] === '%') { //percentage operator
                 let left = parseFloat(tokens[i-1]);
                 let right = parseFloat(tokens[i+1]);
                 let result = (left * right) / 100;
@@ -321,7 +382,11 @@ function tokenizeExpression(expr) {
                 currentNum = '';
             }
             
-            // Check for scientific prefix operators
+            if ((char === '+' || char === '-') && (tokens.length === 0 || ['+', '-', '*', '/', '^', '(', '|'].includes(tokens[tokens.length - 1]))) {
+                currentNum = char;
+                continue;
+            }
+            
             if (char === '√') {
                 tokens.push('√');
             } else if (char === '|') {
