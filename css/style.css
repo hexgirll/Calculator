@@ -6,32 +6,38 @@
 
 body {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--body-bg, #0f0f1a);
+    transition: background 0.3s ease;
 }
 
 .calculator {
-    background: #910196;
+    background: var(--calc-bg, #910196);
     border-radius: 20px;
     padding: 20px;
-    width: auto;
+    width: 100%;
+    max-width: 480px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
+    transition: background 0.3s ease;
 }
 
 .display-container {
     margin-bottom: 20px;
-    background: #cd34db;
+    background: var(--display-bg, #cd34db);
     border-radius: 10px;
     padding: 15px;
+    transition: background 0.3s ease;
 }
 
 .display-label {
     font-size: 0.85rem;
-    color: #ffffff;
+    color: var(--text-light, #ffffff);
     margin-bottom: 5px;
 }
 
@@ -40,24 +46,26 @@ body {
     height: 60px;
     border: none;
     border-radius: 8px;
-    background: #ffffff;
-    color: #000000;
+    background: var(--display-input-bg, #ffffff);
+    color: var(--display-input-text, #000000);
     font-size: 1.8rem;
-    text-align: right; 
+    text-align: right;
     padding: 0 15px;
     font-weight: bold;
     margin-bottom: 10px;
     overflow-x: auto;
     overflow-y: hidden;
-    white-space: nowrap; 
-    font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;
+    white-space: nowrap;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    transition: background 0.3s ease, color 0.3s ease;
 }
 
 #memoryDisplay {
-    color: #00ff00;
+    color: var(--memory-text, #00ff00);
     font-weight: bold;
 }
 
+/*  GRID LAYOUTS  */
 .buttons {
     display: grid;
     grid-template-columns: repeat(20, 1fr);
@@ -83,12 +91,12 @@ body {
     gap: 8px;
 }
 
+/* ========== STANDARD BUTTONS ========== */
 .btn {
     height: 50px;
     border: none;
     border-radius: 8px;
     font-size: 1rem;
-    font-weight: bold;
     cursor: pointer;
     transition: all 0.2s ease;
     font-weight: 600;
@@ -110,127 +118,114 @@ body {
 }
 
 .number {
-    background: #cd34db;
-    color: #ffffff;
-}
-
-.number:hover {
-    background: #cd34db;
-}
-
-.operator {
-    background: #ff6b6b;
-    color: white;
-}
-
-.operator:hover {
-    background: #ff5252;
+    background: var(--btn-num-bg, #cd34db);
+    color: var(--text-light, #ffffff);
 }
 
 .decimal {
-    background: #cd34db;
-    color: #ffffff;
+    background: var(--btn-num-bg, #cd34db);
+    color: var(--text-light, #ffffff);
+}
+
+.operator {
+    background: var(--btn-op-bg, #ff6b6b);
+    color: var(--text-light, white);
 }
 
 .clear {
-    background: #ffd700;
-    color: #000;
-}
-
-.clear:hover {
-    background: #ffed4e;
+    background: var(--btn-clear-bg, #ffd700);
+    color: var(--text-dark, #000);
 }
 
 .equals {
-    background: #2ecc71;
-    color: white;
+    background: var(--btn-eq-bg, #2ecc71);
+    color: var(--text-light, white);
     font-size: 1.2rem;
 }
 
-.equals:hover {
-    background: #27ae60;
-}
-
 .backspace {
-    background: #e74c3c;
-    color: white;
-}
-
-.backspace:hover {
-    background: #c0392b;
+    background: var(--btn-backspace-bg, #e74c3c);
+    color: var(--text-light, white);
 }
 
 .memory {
-    background: #3498db;
-    color: white;
+    background: var(--btn-memory-bg, #3498db);
+    color: var(--text-light, white);
     font-size: 0.8rem;
     height: 40px;
     padding: 5px;
 }
 
-.memory:hover {
-    background: #2980b9;
-}
-
 .scientific {
-    font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-weight: bold;
-    background: #9b59b6;
-    color: white;
+    background: var(--btn-sci-bg, #9b59b6);
+    color: var(--text-light, white);
     width: 70px;
     font-size: 1rem;
 }
 
-.scientific:hover {
-    background: #8e44ad;
-}
-
 .numeral {
-    background: #1abc9c;
-    color: white;
+    background: var(--btn-numeral-bg, #1abc9c);
+    color: var(--text-light, white);
     font-size: 0.9rem;
 }
 
-.numeral:hover {
-    background: #16a085;
+.sign {
+    background: var(--btn-sign-bg, #e67e22);
+    color: var(--text-light, white);
 }
 
+.numeral-dropdown,
+.scientific-more {
+    position: relative;
+}
 
 .numeral-dropdown {
-    position: relative;
     grid-column: span 4;
 }
 
-.numeral-toggle {
-    background: #1abc9c;
-    color: white;
+.numeral-toggle,
+.more-toggle {
     width: 100%;
-    height: 40px;
     border: none;
     border-radius: 8px;
-    font-size: 0.75rem;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
-.numeral-toggle:hover {
-    background: #16a085;
-    transform: translateY(-2px);
-    box-shadow: 0 7px 15px rgba(0, 0, 0, 0.3);
+.numeral-toggle {
+    background: var(--btn-numeral-bg, #1abc9c);
+    color: var(--text-light, white);
+    height: 40px;
+    font-size: 0.75rem;
 }
 
-.numeral-toggle:active {
+.more-toggle {
+    background: var(--btn-sci-bg, #9b59b6);
+    color: var(--text-light, white);
+    height: 50px;
+    font-size: 0.85rem;
+}
+
+.numeral-toggle:hover,
+.more-toggle:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 7px 15px rgba(0, 0, 0, 0.3);
+    opacity: 0.9;
+}
+
+.numeral-toggle:active,
+.more-toggle:active {
     transform: translateY(0);
 }
 
-.numeral-menu {
+.numeral-menu,
+.more-menu {
     position: absolute;
-    left: 100%;
-    top: 0;
-    background: #8e44ad;
+    background: var(--menu-bg, #8e44ad);
     border-radius: 8px;
-    margin-left: 10px;
     min-width: 60px;
     display: none;
     flex-direction: column;
@@ -239,13 +234,27 @@ body {
     overflow: hidden;
 }
 
-.numeral-menu.active {
+.numeral-menu {
+    left: 100%;
+    top: 0;
+    margin-left: 10px;
+}
+
+.more-menu {
+    right: 100%;
+    bottom: 0;
+    margin-right: 10px;
+}
+
+.numeral-menu.active,
+.more-menu.active {
     display: flex;
 }
 
-.numeral-option {
-    background: #8e44ad;
-    color: #ffffff;
+.numeral-option,
+.more-option {
+    background: var(--menu-bg, #8e44ad);
+    color: var(--text-light, #ffffff);
     border: none;
     padding: 15px;
     font-size: 1rem;
@@ -256,78 +265,18 @@ body {
 }
 
 .numeral-option:hover {
-    background: #1abc9c;
-    color: #000000;
-}
-
-
-.scientific-more {
-    position: relative;
-}
-
-.more-toggle {
-    background: #9b59b6;
-    color: white;
-    width: 100%;
-    height: 50px;
-    border: none;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.more-toggle:hover {
-    background: #8e44ad;
-    transform: translateY(-2px);
-    box-shadow: 0 7px 15px rgba(0, 0, 0, 0.3);
-}
-
-.more-toggle:active {
-    transform: translateY(0);
-}
-
-.more-menu {
-    position: absolute;
-    right: 100%;
-    bottom: 0;
-    background: #8e44ad;
-    border-radius: 8px;
-    margin-right: 10px;
-    min-width: 60px;
-    display: none;
-    flex-direction: column;
-    z-index: 1000;
-    box-shadow: 0 7px 15px rgba(0, 0, 0, 0.5);
-    overflow: hidden;
-}
-
-.more-menu.active {
-    display: flex;
-}
-
-.more-option {
-    background: #8e44ad;
-    color: #ffffff;
-    border: none;
-    padding: 15px;
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-align: center;
-    font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--btn-numeral-bg, #1abc9c);
+    color: var(--text-dark, #000000);
 }
 
 .more-option:hover {
-    background: #cd34db;
-    color: #000000;
+    background: var(--btn-num-bg, #cd34db);
+    color: var(--text-dark, #000000);
 }
 
 .main-column .more-option[data-func="()"] {
-    background: #cd34db;
-    color: #ffffff;
+    background: var(--btn-num-bg, #cd34db);
+    color: var(--text-light, #ffffff);
     border-radius: 8px;
     height: 50px;
     font-size: 1rem;
@@ -339,18 +288,6 @@ body {
     opacity: 0.9;
 }
 
-.main-column .more-option[data-func="()"]:active {
-    transform: translateY(0);
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+.hidden {
+    display: none !important;
 }
-
-.sign {
-    background: #e67e22;
-    color: white;
-}
-
-.sign:hover {
-    background: #d35400;
-}
-
-
