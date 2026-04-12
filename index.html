@@ -6,91 +6,212 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculator</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style2.css">
 </head>
 
-<body>
-    <div class="calculator">
+<body class="dark">
+
+    <div class="theme-toggle-wrap">
+        <span class="theme-label">☀️</span>
+        <label class="switch">
+            <input type="checkbox" id="themeToggle" checked />
+            <span class="slider"></span>
+        </label>
+        <span class="theme-label">🌙</span>
+    </div>
+
+    <div class="calculator" id="calculator">
+
+        <div class="mode-tabs">
+            <button class="tab active" data-mode="standard">Standard</button>
+            <button class="tab" data-mode="scientific">Scientific</button>
+            <button class="tab" data-mode="converter">Converter</button>
+        </div>
+
         <div class="display-container">
             <div class="display-label">Result</div>
             <input type="text" id="display" readonly>
             <div class="display-label">Memory: <span id="memoryDisplay">0</span></div>
         </div>
-        <div class="buttons">
-            <!-- First row: Memory and Numeral System operations -->
-            <button class="btn memory">MC</button>
-            <button class="btn memory">MR</button>
-            <button class="btn memory">M+</button>
-            <button class="btn memory">M-</button>
-            
-            <!-- Numeral System Dropdown -->
-            <div class="numeral-dropdown">
-                <button class="btn numeral-toggle">DEC ▼</button>
-                <div class="numeral-menu">
-                    <button class="numeral-option" data-system="DEC">DEC</button>
-                    <button class="numeral-option" data-system="HEX">HEX</button>
-                    <button class="numeral-option" data-system="BIN">BIN</button>
-                    <button class="numeral-option" data-system="OCT">OCT</button>
-                </div>
-            </div>
-        </div>
 
-        <!-- Two-column layout: Scientific (left) + Main Calculator (right) -->
-        <div class="calculator-wrapper">
-            <!-- Left column: Scientific buttons -->
-            <div class="scientific-column">
-                <button class="btn scientific">x!</button>
-                <button class="btn scientific">x^n</button>
-                <button class="btn scientific">x²</button>
-                <button class="btn scientific">√x</button>
+        <div class="mode-content" id="mode-standard">
+            <div class="buttons">
+                <button class="btn memory">MC</button>
+                <button class="btn memory">MR</button>
+                <button class="btn memory">M+</button>
+                <button class="btn memory">M-</button>
                 
-                <!-- More Scientific Functions Dropdown -->
-                <div class="scientific-more">
-                    <button class="btn more-toggle">MORE ▼</button>
-                    <div class="more-menu">
-                        <button class="more-option" data-func="|x|">|x|</button>
-                        <button class="more-option" data-func="%">%</button>
-                        <button class="more-option" data-func="x³">x³</button>
-                        <button class="more-option" data-func="1/x">1/x</button>
+                <div class="numeral-dropdown">
+                    <button class="btn numeral-toggle">DEC ▼</button>
+                    <div class="numeral-menu">
+                        <button class="numeral-option" data-system="DEC">DEC</button>
+                        <button class="numeral-option" data-system="HEX">HEX</button>
+                        <button class="numeral-option" data-system="BIN">BIN</button>
+                        <button class="numeral-option" data-system="OCT">OCT</button>
                     </div>
                 </div>
             </div>
 
-            <!-- Right column: Main calculator buttons -->
-            <div class="main-column">
-                <!-- Second row: Basic operations -->
-                <button class="btn clear">C</button>
-                <button class="btn operator">/</button>
-                <button class="btn operator">*</button>
-                <button class="btn backspace">⌫</button>
+            <div class="calculator-wrapper">
+                <div class="scientific-column">
+                    <button class="btn scientific">x!</button>
+                    <button class="btn scientific">x^n</button>
+                    <button class="btn scientific">x²</button>
+                    <button class="btn scientific">√x</button>
+                    
+                    <div class="scientific-more">
+                        <button class="btn more-toggle">MORE ▼</button>
+                        <div class="more-menu">
+                            <button class="more-option" data-func="|x|">|x|</button>
+                            <button class="more-option" data-func="%">%</button>
+                            <button class="more-option" data-func="x³">x³</button>
+                            <button class="more-option" data-func="1/x">1/x</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="main-column">
+                    <button class="btn clear">C</button>
+                    <button class="btn operator">/</button>
+                    <button class="btn operator">*</button>
+                    <button class="btn backspace">⌫</button>
+                    
+                    <button class="btn number">1</button>
+                    <button class="btn number">2</button>
+                    <button class="btn number">3</button>
+                    <button class="btn operator">-</button>
+                    
+                    <button class="btn number">4</button>
+                    <button class="btn number">5</button>
+                    <button class="btn number">6</button>
+                    <button class="btn operator">+</button>
+                    
+                    <button class="btn number">7</button>
+                    <button class="btn number">8</button>
+                    <button class="btn number">9</button>
+                    <button class="btn sign">+/-</button>
+                    
+                    <button class="more-option" data-func="()">( )</button>
+                    <button class="btn number zero">0</button>
+                    <button class="btn decimal">.</button>
+                    <button class="btn equals">=</button>
+                </div>
+            </div>
+        </div>
+
+       <div class="mode-content hidden" id="mode-scientific">
+            
+            <div class="scientific-top-row">
+                <button class="btn memory">MC</button>
+                <button class="btn memory">MR</button>
+                <button class="btn memory">MS</button>
+                <button class="btn memory">M+</button>
+                <button class="btn memory">M-</button>
                 
-                <!-- Third row: Numbers -->
+                <div class="numeral-dropdown">
+                    <button class="btn numeral-toggle">DEC ▼</button>
+                    <div class="numeral-menu">
+                        <button class="numeral-option" data-system="DEC">DEC</button>
+                        <button class="numeral-option" data-system="HEX">HEX</button>
+                        <button class="numeral-option" data-system="BIN">BIN</button>
+                        <button class="numeral-option" data-system="OCT">OCT</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="scientific-grid">
+                <button class="btn scientific">log</button>
+                <button class="btn scientific">x²</button>
+                <button class="btn clear">C</button>
+                <button class="btn sign">+/-</button>
+                <button class="btn backspace">⌫</button>
+                <button class="btn operator">/</button>
+                
+                <button class="btn scientific">ln</button>
+                <button class="btn scientific">x^n</button>
                 <button class="btn number">1</button>
                 <button class="btn number">2</button>
                 <button class="btn number">3</button>
-                <button class="btn operator">-</button>
+                <button class="btn operator">*</button>
                 
-                <!-- Fourth row: Numbers -->
+                <button class="btn scientific">|x|</button>
+                <button class="btn scientific">√x</button>
                 <button class="btn number">4</button>
                 <button class="btn number">5</button>
                 <button class="btn number">6</button>
-                <button class="btn operator">+</button>
+                <button class="btn operator">-</button>
                 
-                <!-- Fifth row: Numbers -->
+                <button class="btn scientific">%</button>
+                <button class="btn scientific">x!</button>
                 <button class="btn number">7</button>
                 <button class="btn number">8</button>
                 <button class="btn number">9</button>
-                <button class="btn sign">+/-</button>
+                <button class="btn operator">+</button>
                 
-                <!-- Sixth row: Zero and sign -->
+                <button class="btn scientific">π</button>
+                <button class="btn scientific">1/x</button>
                 <button class="more-option" data-func="()">( )</button>
                 <button class="btn number zero">0</button>
                 <button class="btn decimal">.</button>
                 <button class="btn equals">=</button>
             </div>
         </div>
+
+        <div class="mode-content converter-panel hidden" id="mode-converter">
+            <div class="conv-tabs">
+                <button class="conv-tab active" data-conv="length">📏 Довж.</button>
+                <button class="conv-tab" data-conv="mass">⚖️ Маса</button>
+                <button class="conv-tab" data-conv="area">🟦 Площа</button>
+                <button class="conv-tab" data-conv="currency">💵 Валюта</button> 
+            </div>
+
+            <div class="conv-body">
+                <input type="number" id="convInput" value="0" inputmode="none" />
+                
+                <div class="conv-selects">
+                    <select id="convFrom"></select>
+                    <span class="conv-arrow">→</span>
+                    <select id="convTo"></select>
+                </div>
+                
+                <div class="conv-result" id="convResult">—</div>
+
+                <div class="conv-keypad">
+                    <button class="btn number conv-num">7</button>
+                    <button class="btn number conv-num">8</button>
+                    <button class="btn number conv-num">9</button>
+                    <button class="btn clear" id="convClear">C</button>
+                    
+                    <button class="btn number conv-num">4</button>
+                    <button class="btn number conv-num">5</button>
+                    <button class="btn number conv-num">6</button>
+                    <button class="btn backspace" id="convBackspace">⌫</button>
+                    
+                    <button class="btn number conv-num">1</button>
+                    <button class="btn number conv-num">2</button>
+                    <button class="btn number conv-num">3</button>
+                    <button class="btn equals" id="convBtn" style="grid-row: span 2; height: 100%;">OK</button>
+                    
+                    <button class="btn number conv-num zero" style="grid-column: span 2;">0</button>
+                    <button class="btn decimal conv-num">.</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="history-panel">
+            <div class="history-header">
+                <span>📋 Історія</span>
+                <button class="copy-btn" id="copyHistoryBtn">Копіювати</button>
+                <button class="copy-btn" id="clearHistoryBtn">Очистити</button>
+            </div>
+            <div class="history-list" id="historyList"></div>
+        </div>
+
     </div>
+
     <script src="js/main.js"></script>
     <script src="js/advanced.js"></script>
-</body>
+    <script src="js/script.js"></script>
+    </body>
 
 </html>

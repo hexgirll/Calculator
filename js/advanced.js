@@ -6,63 +6,60 @@ let openParenthesesCount = 0;
 
 const memoryButtons = document.querySelectorAll('.btn.memory');
 const scientificButtons = document.querySelectorAll('.btn.scientific');
-const numeralToggle = document.querySelector('.numeral-toggle');
+
+const numeralToggles = document.querySelectorAll('.numeral-toggle');
+const numeralMenus = document.querySelectorAll('.numeral-menu');
 const numeralOptions = document.querySelectorAll('.numeral-option');
-const numeralMenu = document.querySelector('.numeral-menu');
-const moreToggle = document.querySelector('.more-toggle');
+
+const moreToggles = document.querySelectorAll('.more-toggle');
+const moreMenus = document.querySelectorAll('.more-menu');
 const moreOptions = document.querySelectorAll('.more-option');
-const moreMenu = document.querySelector('.more-menu');
 
 memoryButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        handleMemory(button.textContent.trim());
-    });
+    button.addEventListener('click', () => handleMemory(button.textContent.trim()));
 });
 
 scientificButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        handleScientific(button.textContent.trim());
-    });
+    button.addEventListener('click', () => handleScientific(button.textContent.trim()));
 });
 
-if (moreToggle) {
-    moreToggle.addEventListener('click', (e) => {
+moreToggles.forEach((toggle, index) => {
+    toggle.addEventListener('click', (e) => {
         e.stopPropagation();
-        moreMenu.classList.toggle('active');
+        moreMenus[index].classList.toggle('active');
     });
-}
+});
 
 moreOptions.forEach(option => {
     option.addEventListener('click', (e) => {
         e.stopPropagation();
         const func = option.getAttribute('data-func');
         handleScientific(func);
-        moreMenu.classList.remove('active');
+        moreMenus.forEach(m => m.classList.remove('active'));
     });
 });
 
-if (numeralToggle) {
-    numeralToggle.addEventListener('click', (e) => {
+numeralToggles.forEach((toggle, index) => {
+    toggle.addEventListener('click', (e) => {
         e.stopPropagation();
-        numeralMenu.classList.toggle('active');
+        numeralMenus[index].classList.toggle('active');
     });
-}
+});
 
-// Numeral system options
 numeralOptions.forEach(option => {
     option.addEventListener('click', (e) => {
         e.stopPropagation();
         const system = option.getAttribute('data-system');
         handleNumeralSystem(system);
         
-        numeralToggle.textContent = system + ' ▼';
-        numeralMenu.classList.remove('active');
+        numeralToggles.forEach(t => t.textContent = system + ' ▼');
+        numeralMenus.forEach(m => m.classList.remove('active'));
     });
 });
 
 document.addEventListener('click', () => {
-    if (numeralMenu) numeralMenu.classList.remove('active');
-    if (moreMenu) moreMenu.classList.remove('active');
+    numeralMenus.forEach(m => m.classList.remove('active'));
+    moreMenus.forEach(m => m.classList.remove('active'));
 });
 
 function hasOperandForPostfix() {
@@ -73,7 +70,7 @@ function hasOperandForPostfix() {
 }
 
 /**
- * Handle Memory Operations (MC, MR, M+, M-)
+ * Handle Memory Operations (MC, MR, MS, M+, M-)
  */
 function handleMemory(op) {
     const current = parseFloat(currentInput) || 0;
@@ -88,11 +85,13 @@ function handleMemory(op) {
                 isNewExpression = false;
             } else {
                 currentInput = memory.toString();
-                // Update the last number in the expression
                 let parts = currentExpression.split(/([+\-*/])/);
                 parts[parts.length - 1] = currentInput;
                 currentExpression = parts.join('');
             }
+            break;
+        case 'MS':
+            memory = current;
             break;
         case 'M+':
             memory += current;
@@ -106,15 +105,40 @@ function handleMemory(op) {
 }
 
 /**
- * Handle Scientific Operations (Factorial, Square Root, Powers, etc.)
+ * Handle Scientific Operations
  */
 function handleScientific(op) {
     switch (op) {
-        case 'x!':
-            // Append factorial operator to expression
-            if (!hasOperandForPostfix()) {
-                return;
+        case 'log':
+        case 'ln':
+            if (currentInput !== '' && currentInput !== '0' && currentExpression.endsWith(currentInput) && !(isNewExpression && currentExpression === '0')) {
+                const before = currentExpression.slice(0, -currentInput.length);
+                currentInput = `${op}(${currentInput})`; 
+                currentExpression = `${before}${currentInput}`;
+                isNewExpression = false;
+            } else {
+                currentExpression = (currentExpression === '0' || currentExpression === '') ? `${op}(` : currentExpression + `${op}(`;
+                openParenthesesCount++;
+                currentInput = '';
+                isNewExpression = false; 
             }
+            display.value = currentExpression;
+            return;
+
+        case 'π':
+            if (isNewExpression || currentExpression === '0') {
+                currentInput = 'π';
+                currentExpression = 'π';
+                isNewExpression = false;
+            } else {
+                currentExpression += 'π';
+                currentInput = 'π';
+            }
+            display.value = currentExpression;
+            return;
+
+        case 'x!':
+            if (!hasOperandForPostfix()) return;
             if (currentInput !== '') {
                 currentExpression += '!';
                 currentInput = '';
@@ -127,12 +151,12 @@ function handleScientific(op) {
         case '√x':
             if (currentInput !== '' && currentInput !== '0' && currentExpression.endsWith(currentInput) && !(isNewExpression && currentExpression === '0')) {
                 const before = currentExpression.slice(0, -currentInput.length);
-                currentExpression = `${before}√(${currentInput})`;
-                currentInput = '';
+                currentInput = `√(${currentInput})`; 
+                currentExpression = `${before}${currentInput}`;
+                isNewExpression = false;
                 display.value = currentExpression;
                 return;
             }
-
             if (currentExpression === '0' || currentExpression === '') {
                 currentExpression = '√(';
                 openParenthesesCount++;
@@ -146,9 +170,7 @@ function handleScientific(op) {
             return;
         
         case 'x²':
-            if (!hasOperandForPostfix()) {
-                return;
-            }
+            if (!hasOperandForPostfix()) return;
             if (currentInput !== '') {
                 currentExpression += '²';
                 currentInput = '';
@@ -159,9 +181,7 @@ function handleScientific(op) {
             return;
         
         case 'x³':
-            if (!hasOperandForPostfix()) {
-                return;
-            }
+            if (!hasOperandForPostfix()) return;
             if (currentInput !== '') {
                 currentExpression += '³';
                 currentInput = '';
@@ -172,31 +192,28 @@ function handleScientific(op) {
             return;
         
         case '%':
-            if (!hasOperandForPostfix()) {
-                return;
-            }
+            if (!hasOperandForPostfix()) return;
             if (currentInput !== '') {
                 currentExpression += '%';
                 currentInput = '';
             } else if (currentExpression !== '' && !['+', '-', '*', '/', '^', '('].includes(currentExpression.slice(-1))) {
                 currentExpression += '%';
-            } else {
-                return;
             }
             display.value = currentExpression;
             return;
         
         case '1/x':
-            // Wrap the current number in reciprocal form, or insert 1/( if empty/after operator
-            
-            if (/^1\/\(.+\)$/.test(currentInput)) {
-                return; 
-            }
-            
             if (currentInput !== '' && currentInput !== '0' && currentExpression.endsWith(currentInput) && !(isNewExpression && currentExpression === '0')) {
                 const before = currentExpression.slice(0, -currentInput.length);
-                currentExpression = `${before}1/(${currentInput})`;
-                currentInput = `1/(${currentInput})`; // Update currentInput to reflect wrapping
+                const wrapMatch = currentInput.match(/^1\/\((.*)\)$/);
+                
+                if (wrapMatch) {
+                    currentInput = wrapMatch[1]; 
+                } else {
+                    currentInput = `1/(${currentInput})`; 
+                }
+                currentExpression = `${before}${currentInput}`;
+                isNewExpression = false;
                 display.value = currentExpression;
                 return;
             }
@@ -213,15 +230,37 @@ function handleScientific(op) {
                 display.value = currentExpression;
                 return;
             }
-            
-            return; 
-        
+            return;
+
         case '|x|':
-            // Append absolute value operator to expression
+            if (currentInput !== '' && currentInput !== '0' && currentExpression.endsWith(currentInput) && !(isNewExpression && currentExpression === '0')) {
+                
+                const pipeCount = (currentExpression.match(/\|/g) || []).length;
+                const hasOpenPipe = pipeCount % 2 !== 0;
+
+                if (hasOpenPipe) {
+                    currentExpression += '|';
+                    currentInput = '';
+                    isNewExpression = false;
+                    display.value = currentExpression;
+                    return;
+                }
+
+                const before = currentExpression.slice(0, -currentInput.length);
+                const wrapMatch = currentInput.match(/^\|(.*)\|$/);
+                
+                if (wrapMatch) {
+                    currentInput = wrapMatch[1]; 
+                } else {
+                    currentInput = `|${currentInput}|`; 
+                }
+                currentExpression = `${before}${currentInput}`;
+                isNewExpression = false;
+                display.value = currentExpression;
+                return;
+            }
             if (currentExpression === '0' || currentExpression === '') {
                 currentExpression = '|';
-            } else if (currentInput === '') {
-                currentExpression += '|';
             } else {
                 currentExpression += '|';
             }
@@ -231,39 +270,34 @@ function handleScientific(op) {
             return;
         
         case 'x^n':
-            // Append power operator to expression
-            if (!hasOperandForPostfix()) {
-                return;
-            }
+            if (!hasOperandForPostfix()) return;
             if (currentInput !== '') {
                 currentExpression += '^';
                 currentInput = '';
             } else if (currentExpression !== '' && !['+', '-', '*', '/', '^', '('].includes(currentExpression.slice(-1))) {
                 currentExpression += '^';
             }
+            isNewExpression = false;
             display.value = currentExpression;
             return;
         
         case '()':
-            // Count current open parentheses in expression
             const openCount = (currentExpression.match(/\(/g) || []).length;
             const closeCount = (currentExpression.match(/\)/g) || []).length;
             const currentOpen = openCount - closeCount;
             
             if (currentOpen === 0) {
-                // No open parentheses, add opening parenthesis
                 if (currentExpression === '0') {
                     currentExpression = '(';
                 } else {
                     currentExpression += '(';
                 }
-                currentInput = ''; // Reset current input for new number inside parentheses
+                currentInput = ''; 
                 isNewExpression = false; 
                 openParenthesesCount++;
             } else {
-                // Have open parentheses, add closing parenthesis
                 currentExpression += ')';
-                currentInput = ''; // Reset current input after closing parentheses
+                currentInput = ''; 
                 openParenthesesCount--;
             }
             display.value = currentExpression;
@@ -275,22 +309,17 @@ function handleScientific(op) {
 }
 
 /**
- * Handle Numeral System Conversions (Binary, Decimal, Hexadecimal, Octal)
+ * Handle Numeral System Conversions
  */
 function handleNumeralSystem(targetSystem) {
     let currentValue = currentInput;
     let decimalValue;
 
     try {
-        if (currentBase === 'DEC') {
-            decimalValue = parseInt(currentValue, 10);
-        } else if (currentBase === 'HEX') {
-            decimalValue = parseInt(currentValue, 16);
-        } else if (currentBase === 'BIN') {
-            decimalValue = parseInt(currentValue, 2);
-        } else if (currentBase === 'OCT') {
-            decimalValue = parseInt(currentValue, 8);
-        }
+        if (currentBase === 'DEC') decimalValue = parseInt(currentValue, 10);
+        else if (currentBase === 'HEX') decimalValue = parseInt(currentValue, 16);
+        else if (currentBase === 'BIN') decimalValue = parseInt(currentValue, 2);
+        else if (currentBase === 'OCT') decimalValue = parseInt(currentValue, 8);
         
         if (isNaN(decimalValue)) {
             alert('Invalid number for conversion!');
@@ -303,32 +332,22 @@ function handleNumeralSystem(targetSystem) {
     
     let result;
     try {
-        if (targetSystem === 'DEC') {
-            result = decimalValue.toString();
-        } else if (targetSystem === 'HEX') {
-            result = decimalValue.toString(16).toUpperCase();
-        } else if (targetSystem === 'BIN') {
-            if (decimalValue < 0) {
-                alert('Binary conversion does not support negative numbers');
-                return;
-            }
+        if (targetSystem === 'DEC') result = decimalValue.toString();
+        else if (targetSystem === 'HEX') result = decimalValue.toString(16).toUpperCase();
+        else if (targetSystem === 'BIN') {
+            if (decimalValue < 0) return alert('Binary conversion does not support negative numbers');
             result = decimalValue.toString(2);
         } else if (targetSystem === 'OCT') {
-            if (decimalValue < 0) {
-                alert('Octal conversion does not support negative numbers');
-                return;
-            }
+            if (decimalValue < 0) return alert('Octal conversion does not support negative numbers');
             result = decimalValue.toString(8);
         }
         
         currentInput = result;
         currentBase = targetSystem;
         
-        // Update the last number in the expression
         let parts = currentExpression.split(/([+\-*/])/);
         parts[parts.length - 1] = currentInput;
         currentExpression = parts.join('');
-        
         display.value = currentExpression;
     } catch (e) {
         alert('Conversion error');
@@ -336,9 +355,6 @@ function handleNumeralSystem(targetSystem) {
     }
 }
 
-/**
- * Calculate factorial of a number
- */
 function factorial(n) {
     if (n < 0) return NaN;
     if (n === 0 || n === 1) return 1;
@@ -349,9 +365,6 @@ function factorial(n) {
     return result;
 }
 
-/**
- * Get the base value for numeral system conversion
- */
 function getBaseValue(base) {
     switch (base) {
         case 'HEX': return 16;
