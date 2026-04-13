@@ -1,19 +1,15 @@
-/*  THEME VARIABLES  */
 body.dark {
-  /* Backgrounds & Displays */
   --body-bg: #1a001c;
   --calc-bg: #910196;
   --display-bg: #cd34db;
   --display-input-bg: #ffffff;
   --display-input-text: #000000;
 
-  /* Text Colors */
   --text-light: #ffffff;
   --text-dark: #000000;
   --memory-text: #00ff00;
   --history-text: #e0b3e8;
 
-  /* Buttons */
   --btn-num-bg: #cd34db;
   --btn-op-bg: #ff6b6b;
   --btn-eq-bg: #2ecc71;
@@ -25,7 +21,6 @@ body.dark {
   --btn-sign-bg: #e67e22;
   --menu-bg: #8e44ad;
 
-  /* Extension UI (Tabs, Panels) */
   --tab-border: #cd34db;
   --tab-inactive: #e0b3e8;
   --panel-bg: #7a0080;
@@ -111,7 +106,6 @@ input:checked+.slider::before {
   transform: translateX(22px);
 }
 
-/*  MODE TABS  */
 .mode-tabs {
   display: flex;
   border-bottom: 2px solid var(--tab-border);
@@ -160,12 +154,11 @@ input:checked+.slider::before {
 .conv-tab {
   flex: 1;
   padding: 10px;
-  /* Taller tabs */
   border: none;
   border-radius: 6px;
   background: var(--btn-sci-bg);
   color: var(--text-light);
-  font-size: 0.85rem;
+  font-size: 0.80rem;
   font-weight: bold;
   cursor: pointer;
 }
@@ -250,7 +243,6 @@ input:checked+.slider::before {
   justify-content: center;
 }
 
-/*  HISTORY PANEL  */
 .history-panel {
   margin-top: 10px;
   background: var(--panel-bg);
@@ -322,7 +314,6 @@ input:checked+.slider::before {
   background: rgba(0, 0, 0, 0.2);
 }
 
-/*  TOAST  */
 .toast {
   position: fixed;
   bottom: 30px;
@@ -345,8 +336,6 @@ input:checked+.slider::before {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
-
-/* SCIENTIFIC MODE GRID STYLES  */
 
 .scientific-top-row {
   display: grid;

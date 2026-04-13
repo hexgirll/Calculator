@@ -1,4 +1,3 @@
-// Main Calculator Features
 const display = document.getElementById('display');
 let currentInput = '0';
 let currentExpression = ''; 
@@ -48,8 +47,19 @@ function handleNumber(value) {
         currentExpression = value;
         isNewExpression = false;
     } else {
-        currentInput += value;
-        currentExpression += value;
+        if (currentInput === '0') {
+            currentInput = value;
+            currentExpression = currentExpression.slice(0, -1) + value;
+        } 
+        
+        else if (currentInput === '-0') {
+            currentInput = '-' + value;
+            currentExpression = currentExpression.slice(0, -1) + value;
+        } 
+        else {
+            currentInput += value;
+            currentExpression += value;
+        }
     }
     updateDisplay();
 }
@@ -73,7 +83,19 @@ function isEmptyPlaceholder() {
 }
 
 function handleOperator(op) {
-    if (isEmptyPlaceholder()) return;
+    if (isEmptyPlaceholder()) {
+        if (op === '-') {
+            currentInput = '-';
+            currentExpression = '-';
+            isNewExpression = false;
+        } else {
+            currentInput = '';
+            currentExpression = '0' + op;
+            isNewExpression = false;
+        }
+        updateDisplay();
+        return;
+    }
     
     if (currentInput !== '') {
         currentExpression += op;
@@ -91,11 +113,29 @@ function handleOperator(op) {
 
 function handleEquals() {
     if (currentExpression !== '' && !isOperator(currentExpression.slice(-1))) {
+        const isSingleNumber = /^-?\d*\.?\d+$/.test(currentExpression) || currentExpression === 'π';
+
+        if (isSingleNumber) {
+            isNewExpression = true; 
+            return; 
+        }
+
         const exprBeforeEval = currentExpression;
-        const result = evaluateExpression(currentExpression);
-        if (result !== null) {
+        let result = evaluateExpression(currentExpression); 
+        
+        if (result === null || Number.isNaN(Number(result)) || !isFinite(Number(result))) {
+            display.value = 'Error';
             
-            // Link to History panel automatically
+            currentExpression = '';
+            currentInput = '0';
+            isNewExpression = true;
+            openParenthesesCount = 0; 
+            return; 
+        }
+        
+        if (result !== null) {
+            result = cleanMath(result);
+            
             if (typeof window.addHistory === 'function') {
                 window.addHistory(exprBeforeEval, result);
             }
@@ -143,7 +183,15 @@ function handleBackspace() {
 }
 
 function handleSign() {
-    if (currentInput === '' || currentInput === '0') return;
+    if (currentInput === '' || currentInput === '0') {
+        const lastBlockMatch = currentExpression.match(/(?:-?(?:log|ln|√|1\/)?\|[^|]+\||-?(?:log|ln|√|1\/)?\([^)]+\))$/);
+        
+        if (lastBlockMatch) {
+            currentInput = lastBlockMatch[0]; 
+        } else {
+            return; 
+        }
+    }
 
     let exprBefore = currentExpression.slice(0, -currentInput.length);
     let needsParens = exprBefore.length > 0 && isOperator(exprBefore.slice(-1));
@@ -180,9 +228,9 @@ function evaluateExpression(expr) {
     try {
         expr = expr.replace(/\s/g, '');
         
-        // Smart Pi Replacement: turns '5π' into '5*3.14159...'
-        expr = expr.replace(/([0-9.])π/g, "$1*" + Math.PI);  
-        expr = expr.replace(/(^|[^0-9.])π/g, "$1" + Math.PI); 
+        expr = expr.replace(/([0-9.\)\|!²³%])π/g, "$1*π"); 
+        expr = expr.replace(/π([0-9.\(\|l√])/g, "π*$1"); 
+        expr = expr.replace(/π/g, Math.PI);      
         
         while (expr.includes('(')) {
             const parenRegex = /\([^()]*\)/;
@@ -264,6 +312,11 @@ function evaluateSimpleExpression(expr) {
                 tokens[i-1] = (value * value * value).toString();
                 tokens.splice(i, 1);
                 i--;
+            } else if (tokens[i] === '%') {
+                let value = parseFloat(tokens[i-1]);
+                tokens[i-1] = (value / 100).toString();
+                tokens.splice(i, 1);
+                i--;
             } else if (tokens[i] === 'log' || tokens[i] === 'ln' || tokens[i] === '√') {
                 const operand = getOperandValue(tokens, i + 1);
                 if (!operand) return null;
@@ -308,13 +361,7 @@ function evaluateSimpleExpression(expr) {
                 }
                 tokens.splice(i-1, 3, result.toString());
                 i -= 2;
-            } else if (tokens[i] === '%') { 
-                let left = parseFloat(tokens[i-1]);
-                let right = parseFloat(tokens[i+1]);
-                let result = (left * right) / 100;
-                tokens.splice(i-1, 3, result.toString());
-                i -= 2;
-            }
+            } 
         }
         
         let result;
@@ -383,7 +430,10 @@ function tokenizeExpression(expr) {
     return tokens.filter(t => t !== '');
 }
 
-// Keyboard support for main features
+function cleanMath(num) {
+    return parseFloat(Number(num).toPrecision(14));
+}
+
 document.addEventListener('keydown', (event) => {
     const activeTab = document.querySelector('.tab.active');
     if (activeTab && activeTab.dataset.mode === 'converter') {

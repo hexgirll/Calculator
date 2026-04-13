@@ -159,14 +159,14 @@
 
         <div class="mode-content converter-panel hidden" id="mode-converter">
             <div class="conv-tabs">
-                <button class="conv-tab active" data-conv="length">📏 Довж.</button>
-                <button class="conv-tab" data-conv="mass">⚖️ Маса</button>
-                <button class="conv-tab" data-conv="area">🟦 Площа</button>
-                <button class="conv-tab" data-conv="currency">💵 Валюта</button> 
+                <button class="conv-tab active" data-conv="length">📏 Length</button>
+                <button class="conv-tab" data-conv="mass">⚖️ Mass</button>
+                <button class="conv-tab" data-conv="area">🟦 Area</button>
+                <button class="conv-tab" data-conv="currency">💵 Currenсу</button> 
             </div>
 
             <div class="conv-body">
-                <input type="number" id="convInput" value="0" inputmode="none" />
+                <input type="text" id="convInput" value="0" inputmode="none" />
                 
                 <div class="conv-selects">
                     <select id="convFrom"></select>
@@ -177,9 +177,9 @@
                 <div class="conv-result" id="convResult">—</div>
 
                 <div class="conv-keypad">
-                    <button class="btn number conv-num">7</button>
-                    <button class="btn number conv-num">8</button>
-                    <button class="btn number conv-num">9</button>
+                    <button class="btn number conv-num">1</button>
+                    <button class="btn number conv-num">2</button>
+                    <button class="btn number conv-num">3</button>
                     <button class="btn clear" id="convClear">C</button>
                     
                     <button class="btn number conv-num">4</button>
@@ -187,9 +187,9 @@
                     <button class="btn number conv-num">6</button>
                     <button class="btn backspace" id="convBackspace">⌫</button>
                     
-                    <button class="btn number conv-num">1</button>
-                    <button class="btn number conv-num">2</button>
-                    <button class="btn number conv-num">3</button>
+                    <button class="btn number conv-num">7</button>
+                    <button class="btn number conv-num">8</button>
+                    <button class="btn number conv-num">9</button>
                     <button class="btn equals" id="convBtn" style="grid-row: span 2; height: 100%;">OK</button>
                     
                     <button class="btn number conv-num zero" style="grid-column: span 2;">0</button>
@@ -200,9 +200,10 @@
 
         <div class="history-panel">
             <div class="history-header">
-                <span>📋 Історія</span>
-                <button class="copy-btn" id="copyHistoryBtn">Копіювати</button>
-                <button class="copy-btn" id="clearHistoryBtn">Очистити</button>
+                <span>📋 History</span>
+                <button class="copy-btn" id="copyHistoryBtn">Copy</button>
+                <button class="copy-btn" id="pasteHistoryBtn">Paste</button>
+                <button class="copy-btn" id="clearHistoryBtn">Clear</button>
             </div>
             <div class="history-list" id="historyList"></div>
         </div>
@@ -211,7 +212,7 @@
 
     <script src="js/main.js"></script>
     <script src="js/advanced.js"></script>
-    <script src="js/script.js"></script>
+    <script src="js/other.js"></script>
     </body>
 
 </html>

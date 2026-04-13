@@ -1,4 +1,3 @@
-// Advanced Calculator Features 
 const memoryDisplay = document.getElementById('memoryDisplay');
 let memory = 0;
 let currentBase = 'DEC';
@@ -69,9 +68,54 @@ function hasOperandForPostfix() {
     return (!isNewExpression && currentInput !== '') || /[0-9)]$/.test(currentExpression);
 }
 
-/**
- * Handle Memory Operations (MC, MR, MS, M+, M-)
- */
+function getWrappableTarget() {
+    if (currentExpression === '' || currentExpression === '0') return null;
+
+    const piMatch = currentExpression.match(/\d*\.?\d+π$/);
+    if (piMatch) {
+        return { text: piMatch[0], startIndex: currentExpression.length - piMatch[0].length };
+    }
+
+    if (currentInput !== '' && currentExpression.endsWith(currentInput)) {
+        return { text: currentInput, startIndex: currentExpression.length - currentInput.length };
+    }
+
+    if (currentExpression.endsWith(')')) {
+        let depth = 0;
+        for (let i = currentExpression.length - 1; i >= 0; i--) {
+            if (currentExpression[i] === ')') depth++;
+            else if (currentExpression[i] === '(') depth--;
+
+            if (depth === 0) {
+                let start = i;
+                if (start >= 3 && currentExpression.slice(start - 3, start) === 'log') start -= 3;
+                else if (start >= 2 && currentExpression.slice(start - 2, start) === 'ln') start -= 2;
+                else if (start >= 1 && currentExpression.slice(start - 1, start) === '√') start -= 1;
+                else if (start >= 2 && currentExpression.slice(start - 2, start) === '1/') start -= 2;
+
+                return { text: currentExpression.slice(start), startIndex: start };
+            }
+        }
+    }
+
+    if (currentExpression.endsWith('|')) {
+        const pipes = (currentExpression.match(/\|/g) || []).length;
+        if (pipes % 2 === 0 && pipes > 0) {
+            const start = currentExpression.lastIndexOf('|', currentExpression.length - 2);
+            if (start !== -1) {
+                return { text: currentExpression.slice(start), startIndex: start };
+            }
+        }
+    }
+
+    const numMatch = currentExpression.match(/\d*\.?\d+$/);
+    if (numMatch) {
+         return { text: numMatch[0], startIndex: currentExpression.length - numMatch[0].length };
+    }
+
+    return null;
+}
+
 function handleMemory(op) {
     const current = parseFloat(currentInput) || 0;
     switch (op) {
@@ -82,7 +126,8 @@ function handleMemory(op) {
             if (currentInput === '0' || isNewExpression) {
                 currentInput = memory.toString();
                 currentExpression = memory.toString();
-                isNewExpression = false;
+
+                isNewExpression = true; 
             } else {
                 currentInput = memory.toString();
                 let parts = currentExpression.split(/([+\-*/])/);
@@ -104,24 +149,75 @@ function handleMemory(op) {
     memoryDisplay.textContent = memory;
 }
 
-/**
- * Handle Scientific Operations
- */
 function handleScientific(op) {
     switch (op) {
         case 'log':
         case 'ln':
-            if (currentInput !== '' && currentInput !== '0' && currentExpression.endsWith(currentInput) && !(isNewExpression && currentExpression === '0')) {
-                const before = currentExpression.slice(0, -currentInput.length);
-                currentInput = `${op}(${currentInput})`; 
-                currentExpression = `${before}${currentInput}`;
+        case '√x':
+        case '1/x':
+            let funcName = op;
+            if (op === '√x') funcName = '√';
+            if (op === '1/x') funcName = '1/';
+
+            const target = getWrappableTarget();
+
+            if (target) {
+                const before = currentExpression.slice(0, target.startIndex);
+                currentInput = `${funcName}(${target.text})`;
+                currentExpression = before + currentInput;
                 isNewExpression = false;
             } else {
-                currentExpression = (currentExpression === '0' || currentExpression === '') ? `${op}(` : currentExpression + `${op}(`;
+                let openStr = `${funcName}(`;
+                if (currentExpression === '0' || currentExpression === '') {
+                    currentExpression = openStr;
+                } else {
+                    currentExpression += openStr;
+                }
                 openParenthesesCount++;
                 currentInput = '';
-                isNewExpression = false; 
+                isNewExpression = false;
             }
+            display.value = currentExpression;
+            return;
+
+        case '|x|':
+            const pipeCount = (currentExpression.match(/\|/g) || []).length;
+            const hasOpenPipe = pipeCount % 2 !== 0;
+
+            if (hasOpenPipe) {
+                currentExpression += '|';
+                currentInput = '';
+                isNewExpression = false;
+                display.value = currentExpression;
+                return;
+            }
+
+            const targetAbs = getWrappableTarget();
+
+            if (targetAbs) {
+                const before = currentExpression.slice(0, targetAbs.startIndex);
+                const wrapMatch = targetAbs.text.match(/^\|(.*)\|$/);
+
+                
+                if (wrapMatch) {
+                    currentInput = wrapMatch[1]; 
+                } else {
+                    currentInput = `|${targetAbs.text}|`; 
+                }
+                
+                currentExpression = before + currentInput;
+                isNewExpression = false;
+                display.value = currentExpression;
+                return;
+            }
+
+            if (currentExpression === '0' || currentExpression === '') {
+                currentExpression = '|';
+            } else {
+                currentExpression += '|';
+            }
+            currentInput = '';
+            isNewExpression = false;
             display.value = currentExpression;
             return;
 
@@ -148,27 +244,6 @@ function handleScientific(op) {
             display.value = currentExpression;
             return;
         
-        case '√x':
-            if (currentInput !== '' && currentInput !== '0' && currentExpression.endsWith(currentInput) && !(isNewExpression && currentExpression === '0')) {
-                const before = currentExpression.slice(0, -currentInput.length);
-                currentInput = `√(${currentInput})`; 
-                currentExpression = `${before}${currentInput}`;
-                isNewExpression = false;
-                display.value = currentExpression;
-                return;
-            }
-            if (currentExpression === '0' || currentExpression === '') {
-                currentExpression = '√(';
-                openParenthesesCount++;
-            } else {
-                currentExpression += '√(';
-                openParenthesesCount++;
-            }
-            currentInput = '';
-            isNewExpression = false; 
-            display.value = currentExpression;
-            return;
-        
         case 'x²':
             if (!hasOperandForPostfix()) return;
             if (currentInput !== '') {
@@ -192,83 +267,57 @@ function handleScientific(op) {
             return;
         
         case '%':
-            if (!hasOperandForPostfix()) return;
-            if (currentInput !== '') {
-                currentExpression += '%';
-                currentInput = '';
-            } else if (currentExpression !== '' && !['+', '-', '*', '/', '^', '('].includes(currentExpression.slice(-1))) {
-                currentExpression += '%';
-            }
-            display.value = currentExpression;
-            return;
-        
-        case '1/x':
-            if (currentInput !== '' && currentInput !== '0' && currentExpression.endsWith(currentInput) && !(isNewExpression && currentExpression === '0')) {
-                const before = currentExpression.slice(0, -currentInput.length);
-                const wrapMatch = currentInput.match(/^1\/\((.*)\)$/);
+            if (currentExpression.endsWith('/100')) {
+                let body = currentExpression.slice(0, -4); 
+                let depth = 0;
+                let startIndex = -1;
                 
-                if (wrapMatch) {
-                    currentInput = wrapMatch[1]; 
-                } else {
-                    currentInput = `1/(${currentInput})`; 
+                if (body.endsWith(')')) {
+                    for (let i = body.length - 1; i >= 0; i--) {
+                        if (body[i] === ')') depth++;
+                        else if (body[i] === '(') depth--;
+                        
+                        if (depth === 0) { 
+                            startIndex = i;
+                            if (startIndex >= 3 && body.slice(startIndex - 3, startIndex) === 'log') startIndex -= 3;
+                            else if (startIndex >= 2 && body.slice(startIndex - 2, startIndex) === 'ln') startIndex -= 2;
+                            else if (startIndex >= 1 && body.slice(startIndex - 1, startIndex) === '√') startIndex -= 1;
+                            else if (startIndex >= 2 && body.slice(startIndex - 2, startIndex) === '1/') startIndex -= 2;
+                            break;
+                        }
+                    }
+                } else if (body.endsWith('|')) {
+                    startIndex = body.lastIndexOf('|', body.length - 2);
                 }
-                currentExpression = `${before}${currentInput}`;
-                isNewExpression = false;
-                display.value = currentExpression;
-                return;
-            }
-            
-            if (currentExpression === '0' || currentExpression === '' || ['+', '-', '*', '/', '^', '('].includes(currentExpression.slice(-1))) {
-                if (currentExpression === '0') {
-                    currentExpression = '1/(';
-                } else {
-                    currentExpression += '1/(';
-                }
-                currentInput = '';
-                isNewExpression = false;
-                openParenthesesCount++;
-                display.value = currentExpression;
-                return;
-            }
-            return;
 
-        case '|x|':
-            if (currentInput !== '' && currentInput !== '0' && currentExpression.endsWith(currentInput) && !(isNewExpression && currentExpression === '0')) {
-                
-                const pipeCount = (currentExpression.match(/\|/g) || []).length;
-                const hasOpenPipe = pipeCount % 2 !== 0;
-
-                if (hasOpenPipe) {
-                    currentExpression += '|';
-                    currentInput = '';
+                if (startIndex !== -1) {
+                    let before = body.slice(0, startIndex);
+                    let block = body.slice(startIndex); 
+                    currentExpression = before + `(${block}/100)/100`;
+                    currentInput = ''; 
                     isNewExpression = false;
                     display.value = currentExpression;
-                    return;
                 }
-
-                const before = currentExpression.slice(0, -currentInput.length);
-                const wrapMatch = currentInput.match(/^\|(.*)\|$/);
-                
-                if (wrapMatch) {
-                    currentInput = wrapMatch[1]; 
-                } else {
-                    currentInput = `|${currentInput}|`; 
-                }
-                currentExpression = `${before}${currentInput}`;
-                isNewExpression = false;
-                display.value = currentExpression;
                 return;
             }
-            if (currentExpression === '0' || currentExpression === '') {
-                currentExpression = '|';
-            } else {
-                currentExpression += '|';
+
+            const targetPct = getWrappableTarget();
+
+            if (targetPct) {
+                if (/^-?\d*\.?\d+$/.test(targetPct.text)) {
+                    let val = parseFloat(targetPct.text);
+                    let newVal = cleanMath(val / 100).toString();
+                    currentExpression = currentExpression.slice(0, targetPct.startIndex) + newVal;
+                    currentInput = newVal;
+                } else {
+                    currentExpression += '/100';
+                    currentInput = ''; 
+                }
+                isNewExpression = false;
+                display.value = currentExpression;
             }
-            currentInput = '';
-            isNewExpression = false; 
-            display.value = currentExpression;
             return;
-        
+
         case 'x^n':
             if (!hasOperandForPostfix()) return;
             if (currentInput !== '') {
@@ -308,9 +357,6 @@ function handleScientific(op) {
     }
 }
 
-/**
- * Handle Numeral System Conversions
- */
 function handleNumeralSystem(targetSystem) {
     let currentValue = currentInput;
     let decimalValue;
@@ -356,7 +402,12 @@ function handleNumeralSystem(targetSystem) {
 }
 
 function factorial(n) {
-    if (n < 0) return NaN;
+    if (typeof cleanMath === 'function') {
+        n = cleanMath(n);
+    }
+    
+    if (n < 0 || !Number.isInteger(n)) return NaN; 
+    
     if (n === 0 || n === 1) return 1;
     let result = 1;
     for (let i = 2; i <= n; i++) {
